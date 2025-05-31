@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Favorite Angry Friend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #ff6b6b, #ffa500, #ff1744, #d32f2f);
+            background-size: 400% 400%;
+            animation: angryGradient 3s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        @keyframes angryGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .anger-meter {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 1.25rem;
+            font-size: 0.875rem;
+            z-index: 10;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .meter-bar {
+            width: 12rem;
+            height: 0.625rem;
+            background: #333;
+            border-radius: 0.3125rem;
+            margin: 0.3125rem 0;
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ff1744);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 0.3125rem;
+        }
+
+        .phase-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            font-weight: bold;
+            color: white;
+            text-shadow: 0.125rem 0.125rem 0.25rem rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: 5;
+            pointer-events: none;
+            text-align: center;
+            padding: 0 1rem;
+        }
+
+        .phase-indicator.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        .floating-emojis {
+            position: fixed;
+            pointer-events: none;
+            font-size: 2rem;
+            z-index: 3;
+        }
+
+        .shake-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .shake-active {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-0.625rem); }
+            75% { transform: translateX(0.625rem); }
+        }
+
+        .click-counter {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            font-size: 1rem;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .message-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #fefefe 0%, #f8f8f8 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 1rem;
+            padding: 0;
+            width: min(90vw, 50rem);
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 
+                0 1.5625rem 3.125rem rgba(0, 0, 0, 0.15),
+                0 0.3125rem 0.9375rem rgba(255, 107, 107, 0.1),
+                inset 0 0.0625rem 0 rgba(255, 255, 255, 0.6);
+            border: 0.0625rem solid rgba(255, 107, 107, 0.2);
+            z-index: 15;
+            animation: messageReveal 1s ease-out;
+        }
+
+        @keyframes messageReveal {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5) rotate(180deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+            }
+        }
+
+        .message-title {
+            font-size: clamp(2rem, 6vw, 2.8rem);
+            font-weight: 800;
+            background: linear-gradient(45deg, #ff6b6b, #ff1744, #d32f2f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.25rem;
+            text-align: center;
+            letter-spacing: -0.0625rem;
+        }
+
+        .letter-header {
+            background: linear-gradient(135deg, #ff6b6b, #ff8a80);
+            color: white;
+            padding: 2rem clamp(1.5rem, 4vw, 2.5rem);
+            border-radius: 1rem 1rem 0 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .letter-header::after {
+            content: '';
+            position: absolute;
+            bottom: -0.625rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 0.9375rem solid transparent;
+            border-right: 0.9375rem solid transparent;
+            border-top: 0.625rem solid #ff8a80;
+        }
+
+        .letter-body {
+            padding: clamp(1.5rem, 4vw, 2.5rem);
+            background: #fefefe;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: #2c2c2c;
+            line-height: 1.8;
+            border-radius: 0 0 1rem 1rem;
+        }
+
+        .letter-body p {
+            margin-bottom: 1.5rem;
+            text-align: justify;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            word-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .letter-body p:first-child {
+            font-weight: 600;
+            color: #ff6b6b;
+            text-align: center;
+            font-size: clamp(1.1rem, 2.8vw, 1.2rem);
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 0.125rem solid #ffe0e0;
+        }
+
+        .letter-body strong {
+            color: #d32f2f;
+            font-weight: 700;
+        }
+
+        .ending-container {
+            margin-top: 2.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #fff5f5, #ffe0e0);
+            border-radius: 0.625rem;
+            border-left: 0.25rem solid #ff6b6b;
+            position: relative;
+        }
+
+        .ending-container::before {
+            position: absolute;
+            top: -0.625rem;
+            right: 0.9375rem;
+            font-size: 1.5rem;
+            background: white;
+            padding: 0.3125rem;
+            border-radius: 50%;
+            box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.1);
+        }
+
+        .ending-container p {
+            font-style: italic;
+            color: #8b5e3c;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: clamp(0.95rem, 2.3vw, 1.05rem);
+        }
+
+        .message-signature {
+            text-align: right;
+            font-weight: 700;
+            color: #d32f2f;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            margin-top: 1rem;
+        }
+
+        .angry-button {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #ff6b6b, #ff1744);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            border-radius: 3.125rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+            box-shadow: 0 0.625rem 1.25rem rgba(255, 107, 107, 0.3);
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .angry-button:hover {
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 0.9375rem 1.875rem rgba(255, 107, 107, 0.5);
+        }
+
+        .angry-button.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .instructions {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            text-shadow: 0.125rem 0.125rem 0.25rem rgba(0, 0, 0, 0.7);
+            z-index: 4;
+            transition: all 0.5s ease;
+            max-width: 90vw;
+            padding: 1rem;
+        }
+
+        .instructions.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .fire-particle {
+            position: absolute;
+            width: 0.375rem;
+            height: 0.375rem;
+            background: radial-gradient(circle, #ff6b6b, #ff1744);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fireFloat 2s ease-out forwards;
+        }
+
+        @keyframes fireFloat {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) translateY(-6.25rem);
+            }
+        }
+
+        /* Scrollbar styling for webkit browsers */
+        .message-container::-webkit-scrollbar {
+            width: 0.5rem;
+        }
+
+        .message-container::-webkit-scrollbar-track {
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 0.25rem;
+        }
+
+        .message-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #ff6b6b, #ff1744);
+            border-radius: 0.25rem;
+        }
+
+        .message-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #ff1744, #d32f2f);
+        }
+
+        /* Tablet styles */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .message-container {
+                width: 85vw;
+                max-height: 80vh;
+            }
+            
+            .letter-body {
+                padding: 2rem;
+            }
+            
+            .ending-container {
+                margin-top: 2rem;
+                padding: 1.25rem;
+            }
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+            
+            .message-container {
+                width: 95vw;
+                max-height: 90vh;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                border-radius: 0.75rem;
+            }
+            
+            .letter-header {
+                padding: 1.5rem 1.25rem;
+                border-radius: 0.75rem 0.75rem 0 0;
+            }
+            
+            .letter-body {
+                padding: 1.5rem 1.25rem;
+                border-radius: 0 0 0.75rem 0.75rem;
+            }
+            
+            .letter-body p {
+                margin-bottom: 1.25rem;
+                text-align: left;
+            }
+            
+            .letter-body p:first-child {
+                margin-bottom: 1.5rem;
+                padding-bottom: 0.75rem;
+            }
+            
+            .ending-container {
+                margin-top: 1.5rem;
+                padding: 1.25rem 1rem;
+            }
+            
+            .instructions {
+                padding: 1.5rem 1rem;
+                background: rgba(0, 0, 0, 0.4);
+                border-radius: 1rem;
+                backdrop-filter: blur(10px);
+                margin: 0 1rem;
+            }
+            
+            .anger-meter {
+                top: 0.75rem;
+                left: 0.75rem;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+            
+            .meter-bar {
+                width: 8rem;
+                height: 0.5rem;
+            }
+            
+            .click-counter {
+                top: 0.75rem;
+                right: 0.75rem;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+            
+            .angry-button {
+                bottom: 1.5rem;
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Small mobile styles */
+        @media (max-width: 480px) {
+            .message-container {
+                width: 98vw;
+                max-height: 95vh;
+            }
+            
+            .letter-header {
+                padding: 1.25rem 1rem;
+            }
+            
+            .letter-body {
+                padding: 1.25rem 1rem;
+            }
+            
+            .ending-container {
+                padding: 1rem 0.875rem;
+                margin-top: 1.25rem;
+            }
+            
+            .anger-meter {
+                font-size: 0.7rem;
+                padding: 0.375rem 0.625rem;
+            }
+            
+            .meter-bar {
+                width: 6rem;
+                height: 0.375rem;
+            }
+            
+            .click-counter {
+                font-size: 0.75rem;
+                padding: 0.375rem 0.625rem;
+            }
+            
+            .instructions {
+                font-size: 1rem;
+                padding: 1rem 0.75rem;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 360px) {
+            .message-container {
+                width: 99vw;
+                max-height: 98vh;
+                border-radius: 0.5rem;
+            }
+            
+            .letter-header {
+                padding: 1rem 0.875rem;
+                border-radius: 0.5rem 0.5rem 0 0;
+            }
+            
+            .letter-body {
+                padding: 1rem 0.875rem;
+                border-radius: 0 0 0.5rem 0.5rem;
+            }
+            
+            .ending-container {
+                padding: 0.875rem 0.75rem;
+            }
+        }
+
+        /* Landscape mobile styles */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .message-container {
+                max-height: 95vh;
+                width: min(85vw, 45rem);
+            }
+            
+            .instructions {
+                font-size: 1rem;
+            }
+            
+            .phase-indicator {
+                font-size: 1.5rem;
+            }
+            
+            .angry-button {
+                bottom: 1rem;
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .anger-meter,
+            .click-counter {
+                top: 0.5rem;
+                font-size: 0.75rem;
+                padding: 0.375rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="anger-meter">
+        <div>Anger Level: <span id="angerLevel">0</span>%</div>
+        <div class="meter-bar">
+            <div class="meter-fill" id="meterFill"></div>
+        </div>
+    </div>
+
+    <div class="click-counter">
+        Clicks: <span id="clickCount">0</span>
+    </div>
+
+    <div class="phase-indicator" id="phaseIndicator"></div>
+
+    <div class="instructions" id="instructions">
+        🔥 Click anywhere to make me angry! 🔥<br>
+        <small>(Just like your friend does 😄)</small>
+    </div>
+
+    <button class="angry-button" id="skipButton" onclick="skipToMessage()">
+        Too impatient? Skip to message →
+    </button>
+
+    <div class="message-container" id="messageContainer">
+        <div class="letter-header">
+            <h1 class="message-title">Gly</h1>
+        </div>
+        
+        <div class="letter-body">
+            <p><strong>Melchor. Anger Mini. Boi Titig ng Masama.</strong><br>
+            A.K.A. the one and only Ma'am Gly.</p>
+
+            <p>Pards, to be honest, ikaw ang least expected na makakaclose ko sainyong tatlo. Nakakatakot ka i-approach sa una, hayop ka — parang laging galit, parang may balak, parang may tinatagong balisong sa bag. Pero over time, I got to see your funny, soft, and genuinely caring side… and I like that about you. Ang contrast ng "galit mode" mo sa totoong ikaw? Hulog ng langit. Unexpected, but exactly what made you so memorable.</p>
+
+            <p>Salamat sa katarantaduhan nating pinagsaluhan — sa paninira ng tao habang nakangiti, sa panghuhusga na para bang may credentials tayo, at sa mga lowkey na usapang nonsense na somehow, made my internship brighter and far less boring. Isa kang solid na parte ng experience ko dito.</p>
+
+            <p>Among your trio, ikaw yung tahimik pero matunog — ikaw ang nagbabalik sa reality sa dalawang ulile mong kaibigan. Kapag sobrang ingay ni Adella, ikaw ang nagbubura ng tunog. Kapag OA na si Ronalyn, ikaw ang emergency brakes. Hindi man halata minsan, pero I see how vital you are to your group — the balance, the backbone. And I respect that about you.</p>
+
+            <p>Late game na tayo naging close, and maybe that's what made it special. Hindi ko rin inexpect na madediscover mo ang kahinaan ng isang gangster na tulad ko — gago ka talaga. 'Yung simpleng tapik mo sa leeg ko? Natupi ako sa walo. Wala na, wala akong laban doon. 'Wag mong abusuhin 'yun, boi. Pero kung gagawin mo man, 'di ko rin naman pipigilan. 😔✋</p>
+
+            <p>This may be the end of our internship, pero ang moments na to? Hindi basta-basta mawawala sa isip ko. You surprised me in the best way — and somehow, I'll always remember that.</p>
+
+            <p>I appreciate you. I'm proud of you. And lab na lab ko kayo kahit mga tangahin kayo.</p>
+
+            <p>This is goodbye for now, Pards. Don't be a stranger.</p>
+
+            <p>Pakyu. (Pero pakyu na may pagmamahal.)</p>
+
+            <div class="ending-container">
+                <p>"So if all those sharp stares and cold glares were just a front… then damn — I’m glad I got to see the warmth behind them. You caught me off guard in the best way. Keep being the calm in the chaos — and maybe, just maybe, save a soft spot for this neck-sensitive gangster."</p>
+                <p class="message-signature">– Mike</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="shake-container" id="shakeContainer"></div>
+
+    <script>
+        let clickCount = 0;
+        let angerLevel = 0;
+        const maxClicks = 25;
+        
+        const phases = [
+            { level: 20, text: "😐 Slightly Annoyed", emojis: ["😑", "🙄"] },
+            { level: 40, text: "😠 Getting Irritated", emojis: ["😤", "😾", "💢"] },
+            { level: 60, text: "😡 Pretty Mad Now", emojis: ["😡", "🔥", "💥"] },
+            { level: 80, text: "🤬 FURIOUS MODE", emojis: ["🤬", "👿", "💀", "⚡"] },
+            { level: 100, text: "🌋 MAXIMUM ANGER!", emojis: ["🌋", "💥", "🔥", "⚡", "💀"] }
+        ];
+
+        function updateDisplay() {
+            document.getElementById('clickCount').textContent = clickCount;
+            document.getElementById('angerLevel').textContent = angerLevel;
+            document.getElementById('meterFill').style.width = angerLevel + '%';
+        }
+
+        function createFireParticles(x, y) {
+            for (let i = 0; i < 5; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'fire-particle';
+                particle.style.left = (x + Math.random() * 20 - 10) + 'px';
+                particle.style.top = (y + Math.random() * 20 - 10) + 'px';
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 2000);
+            }
+        }
+
+        function createFloatingEmoji(emoji, x, y) {
+            const emojiEl = document.createElement('div');
+            emojiEl.className = 'floating-emojis';
+            emojiEl.textContent = emoji;
+            emojiEl.style.left = x + 'px';
+            emojiEl.style.top = y + 'px';
+            emojiEl.style.animation = `float ${Math.random() * 2 + 2}s ease-out forwards`;
+            document.body.appendChild(emojiEl);
+            
+            setTimeout(() => emojiEl.remove(), 4000);
+        }
+
+        function shakeScreen() {
+            document.body.classList.add('shake-active');
+            setTimeout(() => document.body.classList.remove('shake-active'), 500);
+        }
+
+        function checkPhase() {
+            const currentPhase = phases.find(phase => angerLevel >= phase.level && angerLevel < phase.level + 20);
+            if (currentPhase) {
+                const indicator = document.getElementById('phaseIndicator');
+                indicator.textContent = currentPhase.text;
+                indicator.classList.add('show');
+                
+                setTimeout(() => indicator.classList.remove('show'), 2000);
+            }
+        }
+
+        function handleClick(e) {
+            if (clickCount >= maxClicks) return;
+            
+            clickCount++;
+            angerLevel = Math.min(100, (clickCount / maxClicks) * 100);
+            
+            updateDisplay();
+            createFireParticles(e.clientX, e.clientY);
+            
+            // Get current phase emojis
+            let currentEmojis = ["😤"];
+            for (let phase of phases) {
+                if (angerLevel >= phase.level) {
+                    currentEmojis = phase.emojis;
+                }
+            }
+            
+            const randomEmoji = currentEmojis[Math.floor(Math.random() * currentEmojis.length)];
+            createFloatingEmoji(randomEmoji, e.clientX, e.clientY);
+            
+            if (angerLevel >= 30) {
+                shakeScreen();
+            }
+            
+            checkPhase();
+            
+            if (clickCount >= maxClicks) {
+                setTimeout(showMessage, 1000);
+            }
+        }
+
+        function showMessage() {
+            document.getElementById('instructions').classList.add('hidden');
+            document.getElementById('skipButton').classList.add('hidden');
+            document.getElementById('messageContainer').style.display = 'block';
+            
+            // Create celebration explosion
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight;
+                    createFloatingEmoji('❤️', x, y);
+                }, i * 100);
+            }
+        }
+
+        function skipToMessage() {
+            clickCount = maxClicks;
+            angerLevel = 100;
+            updateDisplay();
+            shakeScreen();
+            setTimeout(showMessage, 500);
+        }
+
+        // Add click event listener
+        document.addEventListener('click', handleClick);
+
+        // Initial setup
+        updateDisplay();
+
+        // Add CSS for floating animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0% {
+                    opacity: 1;
+                    transform: translateY(0) rotate(0deg) scale(1);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateY(-150px) rotate(360deg) scale(1.5);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
