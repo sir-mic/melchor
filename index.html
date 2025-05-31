@@ -107,18 +107,6 @@
             75% { transform: translateX(0.625rem); }
         }
 
-        .click-counter {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            font-size: 1rem;
-            z-index: 10;
-            backdrop-filter: blur(10px);
-        }
 
         .message-container {
             display: none;
@@ -537,19 +525,17 @@
         </div>
     </div>
 
-    <div class="click-counter">
-        Clicks: <span id="clickCount">0</span>
-    </div>
+
 
     <div class="phase-indicator" id="phaseIndicator"></div>
 
     <div class="instructions" id="instructions">
-        🔥 Tap Tap ka lang jan pards! 🔥<br>
-        <small>(Ang Temper pakibantay)</small>
+        🔥 Tap Tap ka lang jan Pards! 🔥<br>
+        <small>(Ang Temper Pakibantay 😄)</small>
     </div>
 
     <button class="angry-button" id="skipButton" onclick="skipToMessage()">
-        Too impatient? Pagbigay na →
+        Too impatient? Sige pagbigyan na →
     </button>
 
     <div class="message-container" id="messageContainer">
@@ -600,7 +586,6 @@
         ];
 
         function updateDisplay() {
-            document.getElementById('clickCount').textContent = clickCount;
             document.getElementById('angerLevel').textContent = angerLevel;
             document.getElementById('meterFill').style.width = angerLevel + '%';
         }
